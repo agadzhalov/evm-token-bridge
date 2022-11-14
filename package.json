@@ -1,0 +1,27 @@
+{
+  "name": "evm-token-bridge",
+  "version": "1.0.0",
+  "description": "EVM Token Bridge - Transfers ERC20 tokens from source blockchain network to target network",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agadzhalov/evm-token-bridge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/agadzhalov/evm-token-bridge/issues"
+  },
+  "homepage": "https://github.com/agadzhalov/evm-token-bridge#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.12.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
