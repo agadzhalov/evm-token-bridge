@@ -19,9 +19,12 @@
   "homepage": "https://github.com/agadzhalov/evm-token-bridge#readme",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "hardhat": "^2.12.2"
+    "chai": "^4.3.7",
+    "hardhat": "^2.12.2",
+    "mocha": "^10.1.0"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.8.0",
     "dotenv": "^16.0.3"
   }
 }
