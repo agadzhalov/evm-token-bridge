@@ -1,7 +1,9 @@
 import { HardhatUserConfig, task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import "@nomicfoundation/hardhat-toolbox";
-import deployLocalhost from "./scripts/deploy-localhost";
+import interactLocalhost from "./scripts/interact-localhost";
+import deployPolygonBridge from "./scripts/deploy-polygon-bridge";
+import interactPolygonLocalhost from "./scripts/interact-polygon-local";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,7 +22,13 @@ const config: HardhatUserConfig = {
 
 export default config;
 
-task("deploy-localhost", "Deploys contract on Goerli network")
+task("interact-localhost", "Deploys contract on Goerli network")
   .setAction(async(args: any, hre: HardhatRuntimeEnvironment) => {
-    await deployLocalhost();
+    await interactLocalhost();
+    await interactPolygonLocalhost();
+  });
+
+task("deploy-polygon-bridge-localhost", "Deploys contract on Goerli network")
+  .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
+    await deployPolygonBridge();
   });

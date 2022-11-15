@@ -1,7 +1,10 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import PolygonBridgeJSON from "./../artifacts/contracts/PolygonBridge.sol/PolygonBridge.json";
 import * as fs from 'fs';
+import readLastLines from 'read-last-lines';
+import { EthereumToken, PolygonBridge, PolygonToken } from '../typechain-types';
 
-const deployLocalhost = async () => {
+const interactLocalhost = async () => {
     let signer: SignerWithAddress;
     [signer] = await ethers.getSigners();
     console.log("Deployer: " + signer.address)
@@ -10,7 +13,7 @@ const deployLocalhost = async () => {
      * DEPLOY ETHEREUM TOKEN
      */
     const EthereumToken = await ethers.getContractFactory("EthereumToken");
-    const ethereumToken = await EthereumToken.deploy();
+    const ethereumToken: EthereumToken = await EthereumToken.deploy();
     await ethereumToken.deployed();
     console.log("EthereumToken deployed to:", ethereumToken.address);
 
@@ -31,13 +34,9 @@ const deployLocalhost = async () => {
     writeLineToFile(ethereumToken.address, signer.address, ethers.utils.parseUnits('4700', 18));
     console.log("Balance Of Owner: " + await ethereumToken.balanceOf(signer.address));
     console.log("Balance Of Bridge: " + await ethereumToken.balanceOf(ethereumBridge.address));
-
-    /**
-     * LISTEN FOR EVENT AND SAVE DATA
-     */
 }
 
-export default deployLocalhost;
+export default interactLocalhost;
 
 const writeLineToFile = (token: string, recipient: string, amount: any) => {
     let obj = {
