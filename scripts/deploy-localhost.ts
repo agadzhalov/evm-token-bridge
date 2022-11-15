@@ -1,6 +1,5 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import EthereumToken from "./../artifacts/contracts/EthereumToken.sol/EthereumToken.json";
-import EthereumBridge from "./../artifacts/contracts/EthereumBridge.sol/EthereumBridge.json";
+import * as fs from 'fs';
 
 const deployLocalhost = async () => {
     let signer: SignerWithAddress;
@@ -29,10 +28,29 @@ const deployLocalhost = async () => {
      */
     await ethereumToken.approve(ethereumBridge.address, ethers.utils.parseUnits('10000', 18));
     await ethereumBridge.depositERC20(4700);
-
+    writeLineToFile(ethereumToken.address, signer.address, ethers.utils.parseUnits('4700', 18));
     console.log("Balance Of Owner: " + await ethereumToken.balanceOf(signer.address));
-    console.log("Balance Of Bridge: " + await ethereumToken.balanceOf(ethereumBridge.address));      
+    console.log("Balance Of Bridge: " + await ethereumToken.balanceOf(ethereumBridge.address));
+
+    /**
+     * LISTEN FOR EVENT AND SAVE DATA
+     */
 }
 
-
 export default deployLocalhost;
+
+const writeLineToFile = (token: string, recipient: string, amount: any) => {
+    let obj = {
+        token: token,
+        recipient: recipient,
+        amount: amount
+    }
+    const data = JSON.stringify(obj) + '\n';
+    fs.appendFile('./db/log.txt', data, (err) => {
+        if (err) {
+            console.log(err)
+        } else {
+            // done
+        }
+    })
+}

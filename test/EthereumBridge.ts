@@ -35,12 +35,14 @@ describe("EthereumBridge", function () {
     it("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
         await ethToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
         console.log("Allowance: " + await ethToken.allowance(owner.address, ethBridge.address));
-        await ethBridge.depositERC20(4700);
+        const depositTx = await ethBridge.depositERC20(4700);
+        await depositTx.wait();
         console.log("Balance Of Bridge: " + await ethToken.balanceOf(ethBridge.address));
         console.log("Balance Of Owner: " + await ethToken.balanceOf(owner.address));
 
         expect(await ethToken.balanceOf(ethBridge.address)).to.equal(ethers.utils.parseUnits('4700', 18));
         expect(await ethToken.balanceOf(owner.address)).to.equal(ethers.utils.parseUnits('5300', 18));
+        await expect(depositTx).to.emit(ethBridge, 'DepositTokens').withArgs(ethBridge.address, owner.address, ethers.utils.parseUnits('4700', 18));
     });
 
 });

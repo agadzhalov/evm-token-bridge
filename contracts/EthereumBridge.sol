@@ -13,13 +13,17 @@ contract EthereumBridge {
     address internal owner;
     EthereumToken public ETHToken;
 
+    event DepositTokens(address _from, address _recipient, uint _amount);
+
     constructor(address _tokenAddress) {
         ETHToken = EthereumToken(_tokenAddress);
         owner = msg.sender;
     }
 
     function depositERC20(uint _amount) external {
-        ETHToken.transferFrom(msg.sender, address(this), _amount * 10 ** 18);
+        uint amount = _amount * 10 ** 18;
+        ETHToken.transferFrom(msg.sender, address(this), amount);
+        emit DepositTokens(address(this), msg.sender, amount);
     }
 
 }
