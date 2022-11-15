@@ -7,13 +7,19 @@ import "hardhat/console.sol";
 contract PolygonBridge {
 
     mapping(address => bool) internal mapTokenOnPolygon;
+    mapping(address => address) internal mapRepresantativeToken; // ethToken -> maticToken
 
-    function setTokenOnPolygon(address _tokenAddress) internal {
-        mapTokenOnPolygon[_tokenAddress] = true;
+    function setTokenOnPolygon(address _sourceToken, address _targetToken) external {
+        mapTokenOnPolygon[_sourceToken] = true;
+        mapRepresantativeToken[_sourceToken] = _targetToken;
+    }
+
+    function getRepresentativeToken(address _sourceToken) external view returns(address) {
+        return mapRepresantativeToken[_sourceToken];
     }
 
     function isTokenOnPolygon(address _tokenAddress) public view returns(bool) {
         return mapTokenOnPolygon[_tokenAddress];
     }
-
+    
 }

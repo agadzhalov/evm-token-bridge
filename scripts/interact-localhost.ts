@@ -31,7 +31,7 @@ const interactLocalhost = async () => {
      */
     await ethereumToken.approve(ethereumBridge.address, ethers.utils.parseUnits('10000', 18));
     await ethereumBridge.depositERC20(4700);
-    writeLineToFile(ethereumToken.address, signer.address, ethers.utils.parseUnits('4700', 18));
+    //writeLineToFile(ethereumToken.address, signer.address, ethers.utils.parseUnits('4700', 18));
     console.log("Balance Of Owner: " + await ethereumToken.balanceOf(signer.address));
     console.log("Balance Of Bridge: " + await ethereumToken.balanceOf(ethereumBridge.address));
 }
