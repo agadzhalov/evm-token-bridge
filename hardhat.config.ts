@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
 
 export default config;
 
-task("deploy-init", "Deploys contract on Goerli network")
+task("deploy-init", "Deploys EthereumToken, EthereumBrdige and PolygonBridge")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     await deployInit();
   });

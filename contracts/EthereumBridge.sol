@@ -22,6 +22,7 @@ contract EthereumBridge {
 
     function depositERC20(uint _amount) external {
         uint amount = _amount * 10 ** 18;
+        require(ETHToken.balanceOf(msg.sender) >= amount, "Insufficient amount of tokens");
         ETHToken.transferFrom(msg.sender, address(this), amount);
         emit DepositTokens(address(this), msg.sender, amount);
     }

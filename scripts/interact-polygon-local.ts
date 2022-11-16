@@ -8,7 +8,6 @@ import { EthereumToken, PolygonBridge, PolygonToken } from '../typechain-types';
 const interactPolygonLocalhost = async () => {
     let signer: SignerWithAddress;
     [signer] = await ethers.getSigners();
-    console.log("Deployer: " + signer.address)
     
     /*** LISTEN FOR EVENT AND SAVE DATA*/
     console.log("----------------------POLYGON-----------------------");

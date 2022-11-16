@@ -12,11 +12,11 @@ const interactLocalhost = async () => {
 
     const ethereumToken: EthereumToken = new ethers.Contract("0x5FbDB2315678afecb367f032d93F642f64180aa3", EthereumTokenJSON.abi, signer);
     const ethereumBridge: EthereumBridge = new ethers.Contract("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", EthereumBridgeJSON.abi, signer);
-    console.log("Owner: " + await ethereumToken.balanceOf(signer.address));
 
     /*** APPROVE & DEPOSIT/LOCK*/
     await ethereumToken.approve(ethereumBridge.address, ethers.utils.parseUnits('10000', 18));
     await ethereumBridge.depositERC20(4700);
+    console.log("Approve and deposit:", ethers.utils.parseUnits('4700', 18));
     writeLineToFile(ethereumToken.address, signer.address, ethers.utils.parseUnits('4700', 18));
     console.log("Balance Of Owner: " + await ethereumToken.balanceOf(signer.address));
     console.log("Balance Of Bridge: " + await ethereumToken.balanceOf(ethereumBridge.address));
