@@ -10,21 +10,17 @@ const interactPolygonLocalhost = async () => {
     [signer] = await ethers.getSigners();
     console.log("Deployer: " + signer.address)
     
-    /**
-     * LISTEN FOR EVENT AND SAVE DATA
-     */
+    /*** LISTEN FOR EVENT AND SAVE DATA*/
     console.log("----------------------POLYGON-----------------------");
 
     let localStorage: any;
     await readLastLines.read('./db/log.txt', 1).then((lines: any) => localStorage=lines);
     const ethereumData = JSON.parse(localStorage);
 
-    const polygonBridge: PolygonBridge = new ethers.Contract("0x38c76A767d45Fc390160449948aF80569E2C4217", PolygonBridgeJSON.abi, signer);
+    const polygonBridge: PolygonBridge = new ethers.Contract("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", PolygonBridgeJSON.abi, signer);
     const ethereumToken: EthereumToken = new ethers.Contract(ethereumData.token, EthereumTokenJSON.abi, signer);
     
-     /**
-     * DEPLOY TOKEN ON POLYGON
-     */
+    /*** DEPLOY TOKEN ON POLYGON*/
     const isTokenOnPolygon = await polygonBridge.isTokenOnPolygon(ethereumToken.address);
     console.log("Checks if token is on Polygon: " + isTokenOnPolygon);
     if (!isTokenOnPolygon) {
