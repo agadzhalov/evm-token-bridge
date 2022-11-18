@@ -1,5 +1,5 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import EthereumTokenJSON from "./../artifacts/contracts/EthereumToken.sol/EthereumToken.json";
+import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 import EthereumBridgeJSON from "./../artifacts/contracts/EthereumBridge.sol/EthereumBridge.json";
 import ERC20TokenFactoryJSON from "./../artifacts/contracts/ERC20TokenFactory.sol/ERC20TokenFactory.json";
 import * as fs from 'fs';
@@ -13,7 +13,7 @@ const interactLocalhost = async () => {
     const erc20Factory: ERC20TokenFactory = new ethers.Contract("0x5FbDB2315678afecb367f032d93F642f64180aa3", ERC20TokenFactoryJSON.abi, signer);
     const erc20Address = await erc20Factory.getERC20Address(0);
     
-    const ethereumToken: EthereumToken = new ethers.Contract(erc20Address, EthereumTokenJSON.abi, signer);
+    const ethereumToken: EthereumToken = new ethers.Contract(erc20Address, BaseTokenJSON.abi, signer);
     const ethereumBridge: EthereumBridge = new ethers.Contract("0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9", EthereumBridgeJSON.abi, signer);
 
     /*** APPROVE & DEPOSIT/LOCK*/

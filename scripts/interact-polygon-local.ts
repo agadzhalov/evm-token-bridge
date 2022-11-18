@@ -1,9 +1,8 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import PolygonBridgeJSON from "./../artifacts/contracts/PolygonBridge.sol/PolygonBridge.json";
-import PolygonTokenJSON from "./../artifacts/contracts/PolygonToken.sol/PolygonToken.json";
-import EthereumTokenJSON from "./../artifacts/contracts/EthereumToken.sol/EthereumToken.json";
+import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 import readLastLines from 'read-last-lines';
-import { EthereumToken, PolygonBridge, PolygonToken } from '../typechain-types';
+import { BaseToken, EthereumToken, PolygonBridge, PolygonToken } from '../typechain-types';
 
 const interactPolygonLocalhost = async () => {
     let signer: SignerWithAddress;
@@ -17,7 +16,7 @@ const interactPolygonLocalhost = async () => {
     const ethereumData = JSON.parse(localStorage);
 
     const polygonBridge: PolygonBridge = new ethers.Contract("0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9", PolygonBridgeJSON.abi, signer);
-    const ethereumToken: EthereumToken = new ethers.Contract(ethereumData.token, EthereumTokenJSON.abi, signer);
+    const ethereumToken: EthereumToken = new ethers.Contract(ethereumData.token, BaseTokenJSON.abi, signer);
     
     /*** DEPLOY TOKEN ON POLYGON*/
     const isTokenOnPolygon = await polygonBridge.isTokenOnPolygon(ethereumToken.address);
@@ -27,19 +26,18 @@ const interactPolygonLocalhost = async () => {
         const ethTokenSymbol = await ethereumToken.symbol();
         console.log("Deploys new Polygon Token as a representative OF:", ethTokenName, ethTokenSymbol);
     
-        const PolygonToken = await ethers.getContractFactory("PolygonToken");
-        const polygonToken: PolygonToken = await PolygonToken.deploy(ethTokenName, ethTokenSymbol);
+        const PolygonToken = await ethers.getContractFactory("BaseToken");
+        const polygonToken: BaseToken = await PolygonToken.deploy(ethTokenName, ethTokenSymbol, ethereumData.amount);
         await polygonToken.deployed();
 
         await polygonBridge.setTokenOnPolygon(ethereumToken.address, polygonToken.address);
         console.log("Set ethToken on Polygon:", await polygonBridge.isTokenOnPolygon(ethereumToken.address))
         console.log("PolygonToken deployed to:", await polygonToken.name(), await polygonToken.symbol(), polygonToken.address);
 
-        await polygonToken.mint(ethereumData.amount);
         console.log("Minted PolygonTokens for Owner: " + await polygonToken.balanceOf(signer.address));
     } else {
         const polygonTokenAddress = await polygonBridge.getRepresentativeToken(ethereumData.token);
-        const polygonToken: PolygonToken = new ethers.Contract(polygonTokenAddress, PolygonTokenJSON.abi, signer);
+        const polygonToken: PolygonToken = new ethers.Contract(polygonTokenAddress, BaseTokenJSON.abi, signer);
         await polygonToken.mint(ethereumData.amount);
         console.log("Minted PolygonTokens for Owner: " + await polygonToken.balanceOf(signer.address));
     }

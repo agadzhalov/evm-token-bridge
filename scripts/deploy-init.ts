@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { ERC20TokenFactory, EthereumToken } from '../typechain-types';
-import EthereumTokenJSON from "./../artifacts/contracts/EthereumToken.sol/EthereumToken.json";
+import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 const deployInit = async () => {
     let signer: SignerWithAddress;
@@ -42,7 +42,7 @@ const deployAndGetToken = async(erc20Factory: ERC20TokenFactory, signer: any,
     await erc20Factory.transferToDeployer(address, ethers.utils.parseUnits(amount, 18));
     
     /** INFO TOKEN */
-    const ethereumToken: EthereumToken = new ethers.Contract(address, EthereumTokenJSON.abi, signer);
+    const ethereumToken: EthereumToken = new ethers.Contract(address, BaseTokenJSON.abi, signer);
     console.log("Token deployed: ", await ethereumToken.name(), await ethereumToken.symbol(), ethereumToken.address);
 
     return ethereumToken;

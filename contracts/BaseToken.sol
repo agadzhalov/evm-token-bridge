@@ -3,14 +3,13 @@ pragma solidity 0.8.17;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-
 import "hardhat/console.sol";
 
+contract BaseToken is ERC20 {
 
-contract PolygonToken is ERC20 {
-
-    constructor(string memory _name, string memory _symbol) ERC20(string.concat("w", _name), string.concat("w", _symbol)) {}
+    constructor(string memory _name, string memory _symbol, uint _amount) ERC20(_name, _symbol) {
+        _mint(msg.sender, _amount);
+    }
 
     function mint(uint _amount) external {
         _mint(msg.sender, _amount);

@@ -6,14 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
 import "hardhat/console.sol";
-import "./EthereumToken.sol";
+import "./BaseToken.sol";
 
 contract ERC20TokenFactory {
     address[] public tokenAddresses;
     event DeployedEvent(address addr, uint256 salt);
 
     function getByteCode(string memory _name, string memory _symbol, uint256 _amount) public pure returns (bytes memory) {
-        bytes memory bytecode = type(EthereumToken).creationCode;
+        bytes memory bytecode = type(BaseToken).creationCode;
         return abi.encodePacked(bytecode, abi.encode(_name, _symbol, _amount));
     }
 
