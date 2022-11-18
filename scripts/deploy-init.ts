@@ -8,29 +8,28 @@ const deployInit = async () => {
 
     console.log("Deployer: " + signer.address)
 
-    /*** DEPLOY TOKEN FACTORY */
-    const ERC20Factory = await ethers.getContractFactory("ERC20TokenFactory");
-    const erc20Factory: ERC20TokenFactory = await ERC20Factory.deploy();
-    await erc20Factory.deployed();
-    console.log("ERC20Factory deployed to:", erc20Factory.address);
+    /** DEPLOY ERC20 TOKEN FACTORY */
+    const erc20Factory = await deployContract("ERC20TokenFactory");
 
-    const ethereumToken: EthereumToken = await deployAndGetToken(erc20Factory, signer, "RandomToken", "RdkToken", "10000");
-    console.log(await ethereumToken.address, await ethereumToken.name(), await ethereumToken.symbol());
+    /** DEPLOY TOKEN */
+    await deployAndGetToken(erc20Factory, signer, "RandomToken", "RDKTKN", "10000");
 
-    /*** DEPLOY ETHEREUM BRIDGE */
-    const EthereumBridge = await ethers.getContractFactory("EthereumBridge");
-    const ethereumBridge = await EthereumBridge.deploy();
-    await ethereumBridge.deployed();
-    console.log("EthereumBridge deployed to:", ethereumBridge.address);
+    /** DEPLOY ETHEREUM BRIDGE */
+    await deployContract("EthereumBridge");
 
-    /*** DEPLOY POLYGON BRIDGE */
-    const PolygonBridge = await ethers.getContractFactory("PolygonBridge");
-    const polygonBridge = await PolygonBridge.deploy();
-    await polygonBridge.deployed();
-    console.log("PolygonBridge deployed to:", polygonBridge.address);
+    /** DEPLOY POLYGON BRIDGE */
+    await deployContract("PolygonBridge");
 }
 
 export default deployInit;
+
+const deployContract = async(...args: any[]): Promise<any> => {
+    const AbstractContract = await ethers.getContractFactory(args[0]);
+    const contract = await AbstractContract.deploy();
+    await contract.deployed();
+    console.log(args[0], "deployed to:", contract.address);
+    return contract;
+}
 
 const deployAndGetToken = async(erc20Factory: ERC20TokenFactory, signer: any,
                                 name: string, symbol: string, amount: any): Promise<EthereumToken> => {
@@ -39,5 +38,6 @@ const deployAndGetToken = async(erc20Factory: ERC20TokenFactory, signer: any,
     const address = await erc20Factory.getAddress(bytecode, 777);
 
     const ethereumToken: EthereumToken = new ethers.Contract(address, EthereumTokenJSON.abi, signer);
+    console.log("Token deployed: ", await ethereumToken.name(), await ethereumToken.symbol(), ethereumToken.address)
     return ethereumToken;
 }
