@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 import "./EthereumToken.sol";
 
 contract ERC20TokenFactory {
-    
+    address[] public tokenAddresses;
     event DeployedEvent(address addr, uint256 salt);
 
     function getByteCode(string memory _name, string memory _symbol, uint256 _amount) public pure returns (bytes memory) {
@@ -44,6 +44,12 @@ contract ERC20TokenFactory {
         }
         
        }
+       address tokenAddress = getAddress(bytecode, _salt);
+       tokenAddresses.push(tokenAddress);
        emit DeployedEvent(addr, _salt);
+    }
+
+    function getERC20Address(uint _index) public view returns(address) {
+        return tokenAddresses[_index];
     }
 }
