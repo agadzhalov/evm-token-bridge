@@ -16,13 +16,13 @@ contract EthereumBridge {
 
     event DepositTokens(address _from, address _recipient, uint _amount);
 
-    constructor(address _tokenAddress) {
-        token = IERC20(_tokenAddress);
+    constructor() {
         owner = msg.sender;
     }
 
-    function depositERC20(uint _amount) external {
+    function depositERC20(address _tokenAddress, uint _amount) external {
         uint amount = _amount * 10 ** 18;
+        token = IERC20(_tokenAddress);
         require(token.balanceOf(msg.sender) >= amount, "Insufficient amount of tokens");
         token.transferFrom(msg.sender, address(this), amount);
         emit DepositTokens(address(this), msg.sender, amount);

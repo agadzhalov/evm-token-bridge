@@ -13,25 +13,21 @@ const deployInit = async () => {
     const erc20Factory: ERC20TokenFactory = await ERC20Factory.deploy();
     await erc20Factory.deployed();
     console.log("ERC20Factory deployed to:", erc20Factory.address);
+
     const ethereumToken: EthereumToken = await deployAndGetToken(erc20Factory, signer, "RandomToken", "RdkToken", "10000");
     console.log(await ethereumToken.address, await ethereumToken.name(), await ethereumToken.symbol());
 
-    // await ethereumTokenFactory.createEthereumToken("222", "2222", ethers.utils.parseUnits('10000', 18));
-    // const address2 = await ethereumTokenFactory.tokens(1);
-    // const ethereumToken2: EthereumToken = new ethers.Contract(address2, EthereumTokenJSON.abi, signer);
-    // console.log(await ethereumToken2.name())
-
     /*** DEPLOY ETHEREUM BRIDGE */
-    // const EthereumBridge = await ethers.getContractFactory("EthereumBridge");
-    // const ethereumBridge = await EthereumBridge.deploy(ethereumToken.address);
-    // await ethereumBridge.deployed();
-    // console.log("EthereumBridge deployed to:", ethereumBridge.address);
+    const EthereumBridge = await ethers.getContractFactory("EthereumBridge");
+    const ethereumBridge = await EthereumBridge.deploy();
+    await ethereumBridge.deployed();
+    console.log("EthereumBridge deployed to:", ethereumBridge.address);
 
     /*** DEPLOY POLYGON BRIDGE */
-    // const PolygonBridge = await ethers.getContractFactory("PolygonBridge");
-    // const polygonBridge = await PolygonBridge.deploy();
-    // await polygonBridge.deployed();
-    // console.log("PolygonBridge deployed to:", polygonBridge.address);
+    const PolygonBridge = await ethers.getContractFactory("PolygonBridge");
+    const polygonBridge = await PolygonBridge.deploy();
+    await polygonBridge.deployed();
+    console.log("PolygonBridge deployed to:", polygonBridge.address);
 }
 
 export default deployInit;
