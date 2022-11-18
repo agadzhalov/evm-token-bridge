@@ -13,7 +13,7 @@ const deployInit = async () => {
 
     /** DEPLOY TOKEN */
     await deployAndGetToken(erc20Factory, signer, "RandomToken", "RDKTKN", "10000");
-    
+
     /** DEPLOY ETHEREUM BRIDGE */
     await deployContract("EthereumBridge");
 
@@ -33,10 +33,15 @@ const deployContract = async(...args: any[]): Promise<any> => {
 
 const deployAndGetToken = async(erc20Factory: ERC20TokenFactory, signer: any,
                                 name: string, symbol: string, amount: any): Promise<EthereumToken> => {
+    /** DEPLOYMENT OF TOKEN */
     const bytecode = await erc20Factory.getByteCode(name, symbol, ethers.utils.parseUnits(amount, 18));
     await erc20Factory.deploy(bytecode, 777);
     
+    /** TRANSFER TO OWNER WALLET */
     const address = await erc20Factory.getAddress(bytecode, 777);
+    await erc20Factory.transferToDeployer(address, ethers.utils.parseUnits(amount, 18));
+    
+    /** INFO TOKEN */
     const ethereumToken: EthereumToken = new ethers.Contract(address, EthereumTokenJSON.abi, signer);
     console.log("Token deployed: ", await ethereumToken.name(), await ethereumToken.symbol(), ethereumToken.address);
 

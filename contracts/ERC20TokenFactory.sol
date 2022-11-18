@@ -44,6 +44,7 @@ contract ERC20TokenFactory {
         }
         
        }
+       
        address tokenAddress = getAddress(bytecode, _salt);
        tokenAddresses.push(tokenAddress);
        emit DeployedEvent(addr, _salt);
@@ -51,5 +52,10 @@ contract ERC20TokenFactory {
 
     function getERC20Address(uint _index) public view returns(address) {
         return tokenAddresses[_index];
+    }
+
+    function transferToDeployer(address _tokenAddress, uint _amount) external {
+        IERC20 token = IERC20(_tokenAddress);
+        token.transfer(msg.sender, _amount);
     }
 }
