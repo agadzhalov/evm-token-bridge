@@ -15,7 +15,7 @@ const interactPolygonLocalhost = async () => {
     await readLastLines.read('./db/log.txt', 1).then((lines: any) => localStorage=lines);
     const ethereumData = JSON.parse(localStorage);
 
-    const polygonBridge: PolygonBridge = new ethers.Contract("0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9", PolygonBridgeJSON.abi, signer);
+    const polygonBridge: PolygonBridge = new ethers.Contract("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", PolygonBridgeJSON.abi, signer);
     const ethereumToken: EthereumToken = new ethers.Contract(ethereumData.token, BaseTokenJSON.abi, signer);
     
     /*** DEPLOY TOKEN ON POLYGON*/
