@@ -1,28 +1,24 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ERC20TokenFactory, EthereumBridge,  EthereumToken } from "../typechain-types";
-import EthereumTokenJSON from "./../artifacts/contracts/EthereumToken.sol/EthereumToken.json";
+import { BaseToken, ERC20TokenFactory, EthereumBridge,  EthereumToken } from "../typechain-types";
+import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 describe("EthereumBridge", function () {
 
+    let tokenContract: BaseToken;
+
     let ethBridgeFactory: any;
     let ethBridge: EthereumBridge;
-
-    let ERC20Factory: any;
-    let erc20Factory: ERC20TokenFactory;
 
     let owner: SignerWithAddress;
 
     beforeEach(async () => {
         [owner] = await ethers.getSigners();
 
-        ERC20Factory = await ethers.getContractFactory("ERC20TokenFactory");
-        erc20Factory = await ERC20Factory.deploy();
-        await erc20Factory.deployed();
-
-        const bytecode = await erc20Factory.getByteCode("Random", "RDK", ethers.utils.parseUnits("10000", 18));
-        await erc20Factory.deploy(bytecode, 777);
+        const ERC20Contract = await ethers.getContractFactory("BaseToken");
+        tokenContract = await ERC20Contract.deploy("EthereumToken", "ETHTKN", ethers.utils.parseUnits("10000", 18));
+        await tokenContract.deployed();
 
         ethBridgeFactory = await ethers.getContractFactory("EthereumBridge");
         ethBridge = await ethBridgeFactory.deploy();
@@ -30,10 +26,9 @@ describe("EthereumBridge", function () {
     });
 
     it.only("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
-        const address = await erc20Factory.getERC20Address(0);
+        const tokenAddress = await tokenContract.address;
         
-        await erc20Factory.transferToDeployer(address, ethers.utils.parseUnits("10000", 18));
-        const ethereumToken = new ethers.Contract(address, EthereumTokenJSON.abi, owner);
+        const ethereumToken = new ethers.Contract(tokenAddress, BaseTokenJSON.abi, owner);
 
         await ethereumToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
 
