@@ -25,9 +25,8 @@ describe("EthereumBridge", function () {
         await ethBridge.deployed();
     });
 
-    it.only("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
-        const tokenAddress = await tokenContract.address;
-        
+    it("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
+        const tokenAddress = await tokenContract.address; 
         const ethereumToken: BaseToken = new ethers.Contract(tokenAddress, BaseTokenJSON.abi, owner);
         
         const approveTx = await ethereumToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
@@ -43,23 +42,16 @@ describe("EthereumBridge", function () {
         await expect(depositTx).to.emit(ethBridge, 'DepositTokens').withArgs(ethBridge.address, owner.address, ethers.utils.parseUnits('4700', 18));
     });
 
-    // it("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
-    //     await ethToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
-    //     const depositTx = await ethBridge.depositERC20(4700);
-    //     await depositTx.wait();
+    it("Should throw on trying to deposit more tokens than available", async function () {
+        const tokenAddress = await tokenContract.address;
+        const ethereumToken: BaseToken = new ethers.Contract(tokenAddress, BaseTokenJSON.abi, owner);
 
-    //     expect(await ethToken.balanceOf(ethBridge.address)).to.equal(ethers.utils.parseUnits('4700', 18));
-    //     expect(await ethToken.balanceOf(owner.address)).to.equal(ethers.utils.parseUnits('5300', 18));
-    //     await expect(depositTx).to.emit(ethBridge, 'DepositTokens').withArgs(ethBridge.address, owner.address, ethers.utils.parseUnits('4700', 18));
-    // });
+        await ethereumToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
 
-    // it("Should throw on trying to deposit more tokens than available", async function () {
-    //     await ethToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
+        const depositTx = await ethBridge.depositERC20(ethereumToken.address, ethers.utils.parseUnits('10000', 18));
+        await depositTx.wait();
 
-    //     const depositTx = await ethBridge.depositERC20(10000);
-    //     await depositTx.wait();
-
-    //     await expect(ethBridge.depositERC20(5001)).to.be.revertedWith("Insufficient amount of tokens");
-    // });
+        await expect(ethBridge.depositERC20(ethereumToken.address, ethers.utils.parseUnits('5001', 18))).to.be.revertedWith("Insufficient amount of tokens");
+    });
 
 });
