@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BaseToken, ERC20TokenFactory, EthereumBridge,  EthereumToken } from "../typechain-types";
+import { BaseToken, EthereumBridge } from "../typechain-types";
 import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 describe("EthereumBridge", function () {
@@ -28,11 +28,14 @@ describe("EthereumBridge", function () {
     it.only("Should deposit 4700 ERC20 tokens to EthereumBridge", async function () {
         const tokenAddress = await tokenContract.address;
         
-        const ethereumToken = new ethers.Contract(tokenAddress, BaseTokenJSON.abi, owner);
+        const ethereumToken: BaseToken = new ethers.Contract(tokenAddress, BaseTokenJSON.abi, owner);
+        
+        const approveTx = await ethereumToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
+        approveTx.wait();
 
-        await ethereumToken.approve(ethBridge.address, ethers.utils.parseUnits('10000', 18));
+        await expect(approveTx).to.emit(tokenContract, 'Approval').withArgs(owner.address, ethBridge.address, ethers.utils.parseUnits('10000', 18));
 
-        const depositTx = await ethBridge.depositERC20(ethereumToken.address, 4700);
+        const depositTx = await ethBridge.depositERC20(ethereumToken.address, ethers.utils.parseUnits('4700', 18));
         await depositTx.wait();
 
         expect(await ethereumToken.balanceOf(ethBridge.address)).to.equal(ethers.utils.parseUnits('4700', 18));
