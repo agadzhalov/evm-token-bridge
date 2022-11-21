@@ -38,6 +38,19 @@ describe("PolygonBridge", function () {
         expect(await polygonToken.balanceOf(owner.address)).to.equal(ethers.utils.parseUnits("15000", 18));
     });
 
+    it("Should emit event when tokens are minted", async function () {
+        const claimDeployTx = await polygonBridge.claimTokens(ethereumToken.address, "Ethereum Token", "ETHTKN", ethers.utils.parseUnits("10000", 18));
+        claimDeployTx.wait();
+
+        const polygonTokenAddress: string = await polygonBridge.token();
+        const polygonToken: BaseToken = new ethers.Contract(polygonTokenAddress, BaseTokenJSON.abi, owner);
+        
+        const claimMintTx = await polygonBridge.claimTokens(ethereumToken.address, await ethereumToken.name(), await ethereumToken.symbol(), ethers.utils.parseUnits("5000", 18));
+        claimMintTx.wait();
+
+        await expect(claimMintTx).to.emit(polygonBridge, 'MintTokens').withArgs("WEthereum Token", "WETHTKN", ethers.utils.parseUnits('5000', 18));
+    });
+
     it("Should deploy new token and mint new tokens", async function () {
         await polygonBridge.claimTokens(ethereumToken.address, "EthereumToken", "ETHTKN", ethers.utils.parseUnits("10000", 18));
         const polygonTokenAddress: string = await polygonBridge.token();

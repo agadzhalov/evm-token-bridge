@@ -13,6 +13,7 @@ contract PolygonBridge {
     mapping(address => address) internal mapRepresantativeToken; // ethToken -> maticToken
 
     event DeployedNewToken(string _name, string _symbol, uint _amount);
+    event MintTokens(string _name, string _symbol, uint _amount);
 
     function claimTokens(address _tokenAddress, string memory _name, string memory _symbol, uint _amount) external {
         if (isTokenOnPolygon(_tokenAddress)) {
@@ -20,6 +21,7 @@ contract PolygonBridge {
             token = BaseToken(mapRepresantativeToken[_tokenAddress]);
             token.mint(_amount);
             token.transfer(msg.sender, _amount);
+            emit MintTokens(token.name(), token.symbol(), _amount);
         } else {
             // deploy new contract
             dpeloyNewToken(_tokenAddress, _name, _symbol, _amount);
