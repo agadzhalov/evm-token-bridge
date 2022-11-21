@@ -8,7 +8,7 @@ import "hardhat/console.sol";
 
 contract PolygonBridge {
 
-    IERC20 public token;
+    BaseToken public token;
     mapping(address => bool) internal mapTokenOnPolygon;
     mapping(address => address) internal mapRepresantativeToken; // ethToken -> maticToken
 
@@ -17,7 +17,9 @@ contract PolygonBridge {
     function claimTokens(address _tokenAddress, string memory _name, string memory _symbol, uint _amount) external {
         if (isTokenOnPolygon(_tokenAddress)) {
             // mint
-            token = IERC20(_tokenAddress);
+            token = BaseToken(mapRepresantativeToken[_tokenAddress]);
+            token.mint(_amount);
+            token.transfer(msg.sender, _amount);
         } else {
             // deploy new contract
             dpeloyNewToken(_tokenAddress, _name, _symbol, _amount);
