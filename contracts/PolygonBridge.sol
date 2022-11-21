@@ -23,6 +23,13 @@ contract PolygonBridge {
         }
     }
 
+    function destroyTokens(address _tokenAddress, uint _amount) external {
+        token = BaseToken(mapRepresantativeToken[_tokenAddress]);
+        require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
+        require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
+        token.burn(_amount);
+    }
+
     function mintExistingToken(address _tokenAddress, uint _amount) private {
         token = BaseToken(mapRepresantativeToken[_tokenAddress]);
         token.mint(_amount);

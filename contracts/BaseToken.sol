@@ -15,4 +15,8 @@ contract BaseToken is ERC20 {
         _mint(msg.sender, _amount);
     }
 
+    function burn(uint _amout) external {
+        _burn(msg.sender, _amout);
+    }
+
 }
