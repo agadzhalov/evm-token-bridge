@@ -17,15 +17,17 @@ contract PolygonBridge {
 
     function claimTokens(address _tokenAddress, string memory _name, string memory _symbol, uint _amount) external {
         if (isTokenOnPolygon(_tokenAddress)) {
-            // mint
-            token = BaseToken(mapRepresantativeToken[_tokenAddress]);
-            token.mint(_amount);
-            token.transfer(msg.sender, _amount);
-            emit MintTokens(token.name(), token.symbol(), _amount);
+            mintExistingToken(_tokenAddress, _amount);
         } else {
-            // deploy new contract
             dpeloyNewToken(_tokenAddress, _name, _symbol, _amount);
         }
+    }
+
+    function mintExistingToken(address _tokenAddress, uint _amount) private {
+        token = BaseToken(mapRepresantativeToken[_tokenAddress]);
+        token.mint(_amount);
+        token.transfer(msg.sender, _amount);
+        emit MintTokens(token.name(), token.symbol(), _amount);
     }
 
     function dpeloyNewToken(address _tokenAddress, string memory _name, string memory _symbol, uint _amount) private {
