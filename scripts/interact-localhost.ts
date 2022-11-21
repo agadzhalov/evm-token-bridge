@@ -2,7 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 import EthereumBridgeJSON from "./../artifacts/contracts/EthereumBridge.sol/EthereumBridge.json";
 import * as fs from 'fs';
-import { EthereumBridge, EthereumToken } from '../typechain-types';
+import { EthereumBridge, BaseToken } from '../typechain-types';
 
 const interactLocalhost = async () => {
     let signer: SignerWithAddress;
@@ -10,7 +10,7 @@ const interactLocalhost = async () => {
 
     console.log("----------------------ETHEREUM-----------------------");
 
-    const ethereumToken: EthereumToken = new ethers.Contract("0x5FbDB2315678afecb367f032d93F642f64180aa3", BaseTokenJSON.abi, signer);
+    const ethereumToken: BaseToken = new ethers.Contract("0x5FbDB2315678afecb367f032d93F642f64180aa3", BaseTokenJSON.abi, signer);
     const ethereumBridge: EthereumBridge = new ethers.Contract("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", EthereumBridgeJSON.abi, signer);
 
     /*** APPROVE & DEPOSIT/LOCK*/
