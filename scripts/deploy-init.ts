@@ -1,5 +1,4 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { ERC20TokenFactory, EthereumToken } from '../typechain-types';
 import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 const deployInit = async () => {
