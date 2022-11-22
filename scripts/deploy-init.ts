@@ -10,11 +10,8 @@ const deployInit = async () => {
     /** DEPLOY TOKEN */
     await deployERC20Token("EthToken", "ETHTKN", "10000");
 
-    /** DEPLOY ETHEREUM BRIDGE */
-    await deployContract("EthereumBridge");
-
-    /** DEPLOY POLYGON BRIDGE */
-    await deployContract("PolygonBridge");
+    /** DEPLOY BRIDGE */
+    await deployContract("Bridge");
 }
 
 export default deployInit;
