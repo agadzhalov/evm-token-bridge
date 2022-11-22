@@ -66,11 +66,19 @@ describe("PolygonBridge", function () {
     it.only("Should throw when trying to destroy more tokens than a user has", async function () {
         const claimDeployTx = await polygonBridge.claimTokens(ethereumToken.address, "Ethereum Token", "ETHTKN", ethers.utils.parseUnits("10000", 18));
         claimDeployTx.wait();
-
-        const claimMintTx = await polygonBridge.connect(addr1).claimTokens(ethereumToken.address, "Ethereum Token", "ETHTKN", ethers.utils.parseUnits("10000", 18));
-        claimMintTx.wait();
         
-        await expect(polygonBridge.destroyTokens(ethereumToken.address, ethers.utils.parseUnits("10001", 18))).to.be.revertedWith("Owner doesn't have enough tokens to destroy");
+        const polygonTokenAddress: string = await polygonBridge.token();
+        const polygonToken: BaseToken = new ethers.Contract(polygonTokenAddress, BaseTokenJSON.abi, owner);
+        // console.log(owner.address, ethereumToken.address, await polygonToken.balanceOf(owner.address));
+
+        // const claimMintTx = await polygonBridge.connect(addr1).claimTokens(ethereumToken.address, "Ethereum Token", "ETHTKN", ethers.utils.parseUnits("10000", 18));
+        // claimMintTx.wait();
+        
+        // console.log(owner.address, ethereumToken.address, await polygonToken.balanceOf(owner.address));
+
+        //console.log("allowance test", await polygonToken.allowance(polygonBridge.address, owner.address));
+        await polygonBridge.destroyTokens(ethereumToken.address, ethers.utils.parseUnits("1", 18));
+        //await expect(polygonBridge.destroyTokens(ethereumToken.address, ethers.utils.parseUnits("10001", 18))).to.be.revertedWith("Owner doesn't have enough tokens to destroy");
     });
 
 });

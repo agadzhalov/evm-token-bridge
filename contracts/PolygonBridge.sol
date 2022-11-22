@@ -27,7 +27,9 @@ contract PolygonBridge {
         token = BaseToken(mapRepresantativeToken[_tokenAddress]);
         require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
         require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
-        token.burn(_amount);
+        token.approve(msg.sender, _amount);
+        console.log("contract", address(this), msg.sender, token.allowance(address(this), msg.sender));
+        token.burnFrom(msg.sender, _amount);
     }
 
     function mintExistingToken(address _tokenAddress, uint _amount) private {
