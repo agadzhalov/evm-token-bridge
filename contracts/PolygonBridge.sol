@@ -14,6 +14,7 @@ contract PolygonBridge {
 
     event DeployedNewToken(string _name, string _symbol, uint _amount);
     event MintTokens(string _name, string _symbol, uint _amount);
+    event BurntTokens(string _name, string _symbol, uint256 _amount);
 
     function claimTokens(address _tokenAddress, string memory _name, string memory _symbol, uint _amount) external {
         if (isTokenOnPolygon(_tokenAddress)) {
@@ -28,6 +29,7 @@ contract PolygonBridge {
         require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
         require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
         token.burnFrom(msg.sender, _amount);
+        emit BurntTokens(token.name(), token.symbol(), _amount);
     }
 
     function mintExistingToken(address _tokenAddress, uint _amount) private {

@@ -78,4 +78,16 @@ describe("PolygonBridge", function () {
         await expect(polygonBridge.destroyTokens(ethereumToken.address, ethers.utils.parseUnits("10001", 18))).to.be.revertedWith("Owner doesn't have enough tokens to destroy");
     });
 
+    it("Should emit event when tokens are burnt", async function () {
+        const claimDeployTx = await polygonBridge.claimTokens(ethereumToken.address, "Ethereum Token", "ETHTKN", ethers.utils.parseUnits("10000", 18));
+        claimDeployTx.wait();
+        
+        const polygonTokenAddress: string = await polygonBridge.token();
+        const polygonToken: BaseToken = new ethers.Contract(polygonTokenAddress, BaseTokenJSON.abi, owner);
+
+        await polygonToken.approve(polygonBridge.address, ethers.utils.parseUnits("10000", 18));
+        const destroyTokensTx = polygonBridge.destroyTokens(ethereumToken.address, ethers.utils.parseUnits("10000", 18));
+        await expect(destroyTokensTx).to.emit(polygonBridge, 'BurntTokens').withArgs("WEthereum Token", "WETHTKN", ethers.utils.parseUnits('10000', 18));
+    });
+
 });
