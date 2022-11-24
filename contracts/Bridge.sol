@@ -37,7 +37,17 @@ contract Bridge {
         token.transfer(msg.sender, _amount);
     }
 
-    function claimTokens(address _sourceToken, string memory _name, string memory _symbol, uint256 _amount) external {
+    function claimTokens(
+        address _sourceToken, 
+        string memory _name, 
+        string memory _symbol, 
+        uint256 _amount,
+        bytes32 _hashedMessage, 
+        uint8 _v, 
+        bytes32 _r, 
+        bytes32 _s
+        ) external {
+        require(verifyMessage(_hashedMessage, _v, _r, _s) == msg.sender, "The message was not signed by the caller");
         if (isTokenOnNetwork(_sourceToken)) {
             mintExistingToken(_sourceToken, _amount);
         } else {
@@ -80,4 +90,10 @@ contract Bridge {
         return mapSourceToTagetTokens[_sourceAddress];
     }
 
+    function verifyMessage(bytes32 _hashedMessage, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHashMessage = keccak256(abi.encodePacked(prefix, _hashedMessage));
+        address signer = ecrecover(prefixedHashMessage, _v, _r, _s);
+        return signer;
+    }
 }
