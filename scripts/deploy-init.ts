@@ -12,6 +12,8 @@ const deployInit = async () => {
 
     /** DEPLOY BRIDGE */
     await deployContract("Bridge");
+
+    await deployERC20Token("RandomChe", "RDM", "15000");
 }
 
 export default deployInit;

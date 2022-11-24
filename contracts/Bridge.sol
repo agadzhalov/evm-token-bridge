@@ -76,4 +76,8 @@ contract Bridge {
         return mapTokenDeployedOnNetwork[_tokenAddress];
     }
 
+    function getTargetTokenFromSource(address _sourceAddress) public view returns(address) {
+        return mapSourceToTagetTokens[_sourceAddress];
+    }
+
 }
