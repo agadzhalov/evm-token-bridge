@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BaseToken, Bridge } from "../typechain-types";
-import { PolygonBridge } from "../typechain-types/contracts/PolygonBridge";
+import { BaseToken, PolygonBridge } from "../typechain-types";
+import BaseTokenABI from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 describe("PolygonBridge", function () {
 
@@ -36,7 +36,32 @@ describe("PolygonBridge", function () {
         await expect(bridge.connect(addr1).
             claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s))
             .to.be.revertedWith("The message was not signed by the caller");
-        //const claimTx = 
+    });
+
+    it("Should deploy new token on Claim one is not existing", async function () {
+        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+        const messageHash = ethers.utils.solidityKeccak256(['string'], ["random message"]);
+        const arrayfiedHash = ethers.utils.arrayify(messageHash);
+        const signature = await owner.signMessage(arrayfiedHash);
+        
+        const sig = ethers.utils.splitSignature(signature);
+        const claimTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        claimTx.wait();
+
+        // check new token with W (wrapped)
+        const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
+        const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
+        expect(await wrappedToken.name()).to.be.equal("WGosho");
+        expect(await wrappedToken.symbol()).to.be.equal("WGOTKN");
+        
+        // check token transfer 
+        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(TOKEN_AMOUNT);
+
+        // check is token on network
+        expect(await bridge.isTokenOnNetwork(token.address)).to.be.equal(true);
+
+        // check event emitted
+        await expect(claimTx).to.emit(bridge, 'DeployedNewToken').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
     });
 
 });

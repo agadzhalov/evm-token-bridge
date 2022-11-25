@@ -54,10 +54,12 @@ contract PolygonBridge {
     }
 
     function deployNewToken(address _sourceToken, string memory _name, string memory _symbol, uint _amount) private {
-        token = new BaseToken(string.concat("W", _name), string.concat("W", _symbol), _amount);
+        string memory wrappedName = string.concat("W", _name);
+        string memory wrappedSymbol = string.concat("W", _symbol);
+        token = new BaseToken(wrappedName, wrappedSymbol, _amount);
         token.transfer(msg.sender, _amount);
         setTokenOnNetwork(_sourceToken, address(token));
-        emit DeployedNewToken(_name, _symbol, _amount);
+        emit DeployedNewToken(wrappedName, wrappedSymbol, _amount);
     }
     
     function setTokenOnNetwork(address _sourceToken, address _targetToken) internal {
