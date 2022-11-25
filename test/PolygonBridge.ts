@@ -93,4 +93,34 @@ describe("PolygonBridge", function () {
         await expect(claimMintTx).to.emit(bridge, 'MintTokens').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
     });
 
+    it("Should destroy tokens", async function () {
+        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
+        const arrayfiedHash = ethers.utils.arrayify(messageHash);
+        const signature = await owner.signMessage(arrayfiedHash);
+        
+        const sig = ethers.utils.splitSignature(signature);
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        claimDeployTx.wait();
+
+        const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
+        const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
+
+        // check total supply is bigger or equal to amount
+        const AMOUNT_TO_BE_DELETED = ethers.utils.parseUnits("5001", 18);
+        await expect(bridge.destroyTokens(token.address, AMOUNT_TO_BE_DELETED))
+            .to.be.revertedWith("Can't destroy more tokens than the total supply");
+
+        // check burn
+        const AMOUNT_TO_BE_DESTROYED = ethers.utils.parseUnits("3000", 18);
+        await wrappedToken.approve(bridge.address, AMOUNT_TO_BE_DESTROYED);
+        const destroyTokensTx = await bridge.destroyTokens(token.address, AMOUNT_TO_BE_DESTROYED);
+
+        const AMOUNT_TO_BE_LEFT = ethers.utils.parseUnits("2000", 18);
+        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(AMOUNT_TO_BE_LEFT);
+
+        // check emit event
+        await expect(destroyTokensTx).to.emit(bridge, 'BurntTokens').withArgs("WGosho", "WGOTKN", AMOUNT_TO_BE_DESTROYED);
+    });
+
 });
