@@ -28,7 +28,7 @@ describe("PolygonBridge", function () {
     
     it("Should throw when trying to claim tokens with an unsigned/wrong message", async function () {
         const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["random message"]);
+        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
         const arrayfiedHash = ethers.utils.arrayify(messageHash);
         const signature = await owner.signMessage(arrayfiedHash);
         
@@ -38,9 +38,9 @@ describe("PolygonBridge", function () {
             .to.be.revertedWith("The message was not signed by the caller");
     });
 
-    it("Should deploy new token on Claim one is not existing", async function () {
+    it("Should deploy new token on Claim when one is not existing", async function () {
         const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["random message"]);
+        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
         const arrayfiedHash = ethers.utils.arrayify(messageHash);
         const signature = await owner.signMessage(arrayfiedHash);
         
@@ -62,6 +62,35 @@ describe("PolygonBridge", function () {
 
         // check event emitted
         await expect(claimTx).to.emit(bridge, 'DeployedNewToken').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
+    });
+
+    it("Should mint new tokens on Claim when there's already deployed one", async function () {
+        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
+        const arrayfiedHash = ethers.utils.arrayify(messageHash);
+        const signature = await owner.signMessage(arrayfiedHash);
+        
+        const sig = ethers.utils.splitSignature(signature);
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        claimDeployTx.wait();
+
+        // check new token with W (wrapped)
+        const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
+        const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
+        
+        // check mint
+        const claimMintTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        claimMintTx.wait();
+
+        const EXPECTED_TOTAL_AMOUNT = ethers.utils.parseUnits("10000", 18);
+        expect(await wrappedToken.totalSupply()).to.be.equal(EXPECTED_TOTAL_AMOUNT);
+
+        // check transfer 
+        const EXPECTED_ACCOUNT_AMOUNT = ethers.utils.parseUnits("10000", 18);
+        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(EXPECTED_ACCOUNT_AMOUNT);
+
+        // emit event 
+        await expect(claimMintTx).to.emit(bridge, 'MintTokens').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
     });
 
 });
