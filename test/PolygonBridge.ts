@@ -106,10 +106,15 @@ describe("PolygonBridge", function () {
         const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
         const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
 
-        // check total supply is bigger or equal to amount
+        // should throw when trying to burn more tokens than total supply
         const AMOUNT_TO_BE_DELETED = ethers.utils.parseUnits("5001", 18);
         await expect(bridge.destroyTokens(token.address, AMOUNT_TO_BE_DELETED))
             .to.be.revertedWith("Can't destroy more tokens than the total supply");
+
+        // should throw if user doesn't have enough tokens to burn
+        const AMOUNT_TO_BE_DELETED2 = ethers.utils.parseUnits("500", 18);
+        await expect(bridge.connect(addr1).destroyTokens(token.address, AMOUNT_TO_BE_DELETED2))
+            .to.be.revertedWith("Owner doesn't have enough tokens to destroy");
 
         // check burn
         const AMOUNT_TO_BE_DESTROYED = ethers.utils.parseUnits("3000", 18);
