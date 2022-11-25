@@ -1,5 +1,4 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import BaseTokenJSON from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 
 const deployInit = async () => {
     let signer: SignerWithAddress;
