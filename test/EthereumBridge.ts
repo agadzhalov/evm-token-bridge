@@ -57,5 +57,15 @@ describe("EthereumBridge", function () {
         expect(await token.balanceOf(owner.address)).to.equal(ethers.utils.parseUnits("10000", 18));
     });
 
+    it("Should throw when trying to unlock more tokens than available", async function () {
+        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+        token.approve(bridge.address, TOKEN_AMOUNT);
+
+        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT);
+        lockTx.wait();
+
+        const MORE_TOKEN_AMOUNT = ethers.utils.parseUnits("6000", 18);
+        await expect(bridge.unlock(token.address, MORE_TOKEN_AMOUNT)).to.be.revertedWith("Insufficient amount of locked tokens");
+    });
 
 });

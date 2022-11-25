@@ -26,7 +26,7 @@ contract EthereumBridge {
     }
 
     function unlock(address _targetToken, uint256 _amount) external {
-        require(accountBalances[msg.sender][_targetToken] >= _amount, "Unable to unlock tokens");
+        require(accountBalances[msg.sender][_targetToken] >= _amount, "Insufficient amount of locked tokens");
         accountBalances[msg.sender][address(token)] -= _amount;
         token = BaseToken(_targetToken);
         token.transfer(msg.sender, _amount);
