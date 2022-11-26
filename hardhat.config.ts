@@ -8,6 +8,7 @@ import deployERC20TokenGoerli from "./scripts/deploy-erc20-goerli";
 
 import * as dotenv from "dotenv";
 import deployEthereumBridgeGoerli from "./scripts/deploy-ethbridge-goerli";
+import deployPolygonBridgeGoerli from "./scripts/deploy-polygonbridge-mumbai";
 dotenv.config();
 
 const config: HardhatUserConfig = {
@@ -27,10 +28,19 @@ const config: HardhatUserConfig = {
     goerli: {
       url: process.env.RPC_URL || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+    matic: {
+      url: process.env.MUMBAI_RPC_URL,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     }
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_KEY || ""
+    apiKey: {
+      //ethereum
+      goerli: process.env.ETHERSCAN_KEY || "",
+      //polygon
+      polygonMumbai: process.env.POLYGONSCAN_KEY || "",
+    }
   }
 };
 
@@ -41,9 +51,14 @@ task("deploy-erc20-goerli", "Deploys EthereumToken, EthereumBrdige and PolygonBr
     await deployERC20TokenGoerli(args, hre);
   });
 
-task("deploy-ethbridge-goerli", "Deploys EthereumToken, EthereumBrdige and PolygonBridge")
+task("deploy-ethbridge-goerli", "Deploys and verifies EthereumBrdige")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     await deployEthereumBridgeGoerli(args, hre);
+  });
+
+task("deploy-polygonbridge-goerli", "Deploys and verifies PolygonBridge")
+  .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
+    await deployPolygonBridgeGoerli(args, hre);
   });
 
 
@@ -53,7 +68,7 @@ task("deploy-init", "Deploys EthereumToken, EthereumBrdige and PolygonBridge")
   });
 
 task("interact-localhost", "Deploys contract on Goerli network")
-  .setAction(async(args: any, hre: HardhatRuntimeEnvironment) => {
+  .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     await interactLocalhost();
     await interactPolygonLocalhost();
   });
