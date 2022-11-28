@@ -8,7 +8,7 @@ import deployERC20TokenGoerli from "./scripts/deploy-erc20-goerli";
 
 import * as dotenv from "dotenv";
 import deployEthereumBridgeGoerli from "./scripts/deploy-ethbridge-goerli";
-import deployPolygonBridgeGoerli from "./scripts/deploy-polygonbridge-mumbai";
+import deployPolygonBridgeMumbai from "./scripts/deploy-polygonbridge-mumbai";
 dotenv.config();
 
 const config: HardhatUserConfig = {
@@ -56,9 +56,9 @@ task("deploy-ethbridge-goerli", "Deploys and verifies EthereumBrdige")
     await deployEthereumBridgeGoerli(args, hre);
   });
 
-task("deploy-polygonbridge-goerli", "Deploys and verifies PolygonBridge")
+task("deploy-polygonbridge-mumbai", "Deploys and verifies PolygonBridge")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
-    await deployPolygonBridgeGoerli(args, hre);
+    await deployPolygonBridgeMumbai(args, hre);
   });
 
 

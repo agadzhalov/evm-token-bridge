@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-const deployPolygonBridgeGoerli = async(args: any, hre: HardhatRuntimeEnvironment) => {
+const deployPolygonBridgeMumbai = async(args: any, hre: HardhatRuntimeEnvironment) => {
   const [deployer] = await ethers.getSigners();
   console.log("Depoying with address: " + deployer.address + "\n" + "Balance: " + (await deployer.getBalance()).toString());
 
@@ -19,4 +19,4 @@ const deployPolygonBridgeGoerli = async(args: any, hre: HardhatRuntimeEnvironmen
   });
 }
 
-export default deployPolygonBridgeGoerli;
+export default deployPolygonBridgeMumbai;
