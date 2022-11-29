@@ -60,15 +60,3 @@ task("deploy-polygonbridge-mumbai", "Deploys and verifies PolygonBridge")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     await deployPolygonBridgeMumbai(args, hre);
   });
-
-
-task("deploy-init", "Deploys EthereumToken, EthereumBrdige and PolygonBridge")
-  .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
-    await deployInit();
-  });
-
-task("interact-localhost", "Deploys contract on Goerli network")
-  .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
-    await interactLocalhost();
-    await interactPolygonLocalhost();
-  });
