@@ -1,9 +1,6 @@
+import "@nomicfoundation/hardhat-toolbox";
 import { HardhatUserConfig, task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import "@nomicfoundation/hardhat-toolbox";
-import interactLocalhost from "./scripts/interact-localhost";
-import interactPolygonLocalhost from "./scripts/interact-polygon-local";
-import deployInit from "./scripts/deploy-init";
 import deployERC20TokenGoerli from "./scripts/deploy-erc20-goerli";
 
 import * as dotenv from "dotenv";
@@ -26,7 +23,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     goerli: {
-      url: process.env.RPC_URL || "",
+      url: process.env.ETHEREUM_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
     matic: {
