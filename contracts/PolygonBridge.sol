@@ -11,8 +11,6 @@ import "./BaseToken.sol";
 
 contract PolygonBridge {
 
-    BaseToken public token;
-
     mapping(address => bool) internal mapTokenDeployedOnNetwork;
     mapping(address => address) internal mapSourceToTagetTokens;
 
@@ -39,8 +37,7 @@ contract PolygonBridge {
     }
 
     function destroyTokens(address _targetAddress, uint _amount) external {
-        // keep in mind a signed message might be needed here also
-        token = BaseToken(_targetAddress);
+        BaseToken token = BaseToken(_targetAddress);
         require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
         require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
         token.burnFrom(msg.sender, _amount);
@@ -48,7 +45,7 @@ contract PolygonBridge {
     }
 
     function mintExistingToken(address _sourceToken, uint _amount) private {
-        token = BaseToken(mapSourceToTagetTokens[_sourceToken]);
+        BaseToken token = BaseToken(mapSourceToTagetTokens[_sourceToken]);
         token.mint(_amount);
         token.transfer(msg.sender, _amount);
         emit MintTokens(token.name(), token.symbol(), _amount);
@@ -57,7 +54,7 @@ contract PolygonBridge {
     function deployNewToken(address _sourceToken, string memory _name, string memory _symbol, uint _amount) private {
         string memory wrappedName = string.concat("W", _name);
         string memory wrappedSymbol = string.concat("W", _symbol);
-        token = new BaseToken(wrappedName, wrappedSymbol, _amount);
+        BaseToken token = new BaseToken(wrappedName, wrappedSymbol, _amount);
         token.transfer(msg.sender, _amount);
         setTokenOnNetwork(_sourceToken, address(token));
         emit DeployedNewToken(wrappedName, wrappedSymbol, _amount);
