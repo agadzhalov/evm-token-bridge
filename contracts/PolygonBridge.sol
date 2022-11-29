@@ -11,8 +11,8 @@ import "./BaseToken.sol";
 
 contract PolygonBridge {
 
-    mapping(address => bool) internal mapTokenDeployedOnNetwork;
-    mapping(address => address) internal mapSourceToTagetTokens;
+    mapping(address => bool) private mapTokenDeployedOnNetwork;
+    mapping(address => address) private mapSourceToTagetTokens;
 
     event DeployedNewToken(string _name, string _symbol, uint _amount);
     event MintTokens(string _name, string _symbol, uint _amount);
