@@ -17,10 +17,10 @@ POLYGONSCAN_KEY=YOUR POLYGONSCAN_KEY HERE
 First we have to deploy our ERC20 token on desired network. In our case we are going to deploy on Goerli.
 Make sure you have some GoerliETH in your wallet.
 
-`deploy-erc20-goerli` is a custom task implemented in `hardhat.config.ts`
+`deploy-erc20-goerli` is a custom task implemented in `hardhat.config.ts` wich requires three parameters - `name`, `symbol`, `amount` (in ethers)
 
 ```bash
-  npx hardhat deploy-erc20-goerli --network goerli
+  npx hardhat deploy-erc20-goerli --network goerli --name Moretti --symbol MOR --amount 15000
 ```
 
 Second we have to deploy and verify our `EthereumBridge` contract on Goerli

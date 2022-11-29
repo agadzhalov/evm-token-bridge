@@ -4,13 +4,13 @@ const deployERC20TokenGoerli = async (args: any, hre: HardhatRuntimeEnvironment)
   const [deployer] = await ethers.getSigners();
   console.log("Depoying with address: " + deployer.address + "\n" + "Balance: " + (await deployer.getBalance()).toString());
 
-  await deployERC20Token("SashoToken", "SHTK", "10000", hre);
+  await deployERC20Token(args.name, args.symbol, args.amount, hre);
 
 }
 
 const deployERC20Token = async (name: string, symbol: string, amount: string, hre: HardhatRuntimeEnvironment) => {
-  const formatAmount = ethers.utils.parseUnits(amount, 18);
-  const ERC20Contract = await ethers.getContractFactory("BaseToken").toString();
+  const formatAmount = ethers.utils.parseUnits(amount, 18).toString();
+  const ERC20Contract = await ethers.getContractFactory("BaseToken");
   const contract = await ERC20Contract.deploy(name, symbol, formatAmount);
   await contract.deployed();
   console.log("BaseToken", "deployed to:", contract.address);

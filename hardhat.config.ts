@@ -44,6 +44,9 @@ const config: HardhatUserConfig = {
 export default config;
 
 task("deploy-erc20-goerli", "Deploys EthereumToken, EthereumBrdige and PolygonBridge")
+  .addParam("name", "Name of the token we want to deploy")
+  .addParam("symbol", "Symbol up to 11 characters of the token")
+  .addParam("amount", "Amount of the token in ethers")
   .setAction(async (args: any, hre: HardhatRuntimeEnvironment) => {
     await deployERC20TokenGoerli(args, hre);
   });
