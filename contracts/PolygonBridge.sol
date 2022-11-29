@@ -29,7 +29,7 @@ contract PolygonBridge {
         bytes32 _s
         ) external {
         require(verifyMessage(_hashedMessage, _v, _r, _s) == msg.sender, "The message was not signed by the caller");
-        if (isTokenOnNetwork(_sourceToken)) {
+        if (mapTokenDeployedOnNetwork[_sourceToken]) {
             mintExistingToken(_sourceToken, _amount);
         } else {
             deployNewToken(_sourceToken, _name, _symbol, _amount);
@@ -60,20 +60,20 @@ contract PolygonBridge {
         emit DeployedNewToken(wrappedName, wrappedSymbol, _amount);
     }
     
-    function setTokenOnNetwork(address _sourceToken, address _targetToken) internal {
+    function setTokenOnNetwork(address _sourceToken, address _targetToken) private {
         mapTokenDeployedOnNetwork[_sourceToken] = true;
         mapSourceToTagetTokens[_sourceToken] = _targetToken;
     }
 
-    function isTokenOnNetwork(address _tokenAddress) public view returns(bool) {
+    function isTokenOnNetwork(address _tokenAddress) external view returns(bool) {
         return mapTokenDeployedOnNetwork[_tokenAddress];
     }
 
-    function getTargetTokenFromSource(address _sourceAddress) public view returns(address) {
+    function getTargetTokenFromSource(address _sourceAddress) external view returns(address) {
         return mapSourceToTagetTokens[_sourceAddress];
     }
 
-    function verifyMessage(bytes32 _hashedMessage, uint8 _v, bytes32 _r, bytes32 _s) public pure returns (address) {
+    function verifyMessage(bytes32 _hashedMessage, uint8 _v, bytes32 _r, bytes32 _s) private pure returns (address) {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHashMessage = keccak256(abi.encodePacked(prefix, _hashedMessage));
         address signer = ecrecover(prefixedHashMessage, _v, _r, _s);
