@@ -20,8 +20,8 @@ contract PolygonBridge {
 
     function claimTokens(
         address _sourceToken, 
-        string memory _name, 
-        string memory _symbol, 
+        string calldata _name, 
+        string calldata _symbol, 
         uint256 _amount,
         bytes32 _hashedMessage, 
         uint8 _v, 
@@ -36,7 +36,7 @@ contract PolygonBridge {
         }
     }
 
-    function destroyTokens(address _targetAddress, uint _amount) external {
+    function destroyTokens(address _targetAddress, uint256 _amount) external {
         BaseToken token = BaseToken(_targetAddress);
         require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
         require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
@@ -44,14 +44,14 @@ contract PolygonBridge {
         emit BurntTokens(token.name(), token.symbol(), _amount);
     }
 
-    function mintExistingToken(address _sourceToken, uint _amount) private {
+    function mintExistingToken(address _sourceToken, uint256 _amount) private {
         BaseToken token = BaseToken(mapSourceToTagetTokens[_sourceToken]);
         token.mint(_amount);
         token.transfer(msg.sender, _amount);
         emit MintTokens(token.name(), token.symbol(), _amount);
     }
 
-    function deployNewToken(address _sourceToken, string memory _name, string memory _symbol, uint _amount) private {
+    function deployNewToken(address _sourceToken, string calldata _name, string calldata _symbol, uint _amount) private {
         string memory wrappedName = string.concat("W", _name);
         string memory wrappedSymbol = string.concat("W", _symbol);
         BaseToken token = new BaseToken(wrappedName, wrappedSymbol, _amount);

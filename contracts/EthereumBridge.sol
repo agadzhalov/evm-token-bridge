@@ -11,7 +11,7 @@ import "./BaseToken.sol";
 
 contract EthereumBridge {
 
-    mapping(address => mapping(address => uint256)) accountBalances; // account -> token -> amount 
+    mapping(address => mapping(address => uint256)) private accountBalances; // account -> token -> amount 
 
     event LockTokens(address _sourceToken, address _spender, uint256 _amount);
 
