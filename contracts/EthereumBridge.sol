@@ -14,6 +14,7 @@ contract EthereumBridge {
     mapping(address => mapping(address => uint256)) private accountBalances; // account -> token -> amount 
 
     event LockTokens(address _sourceToken, address _spender, uint256 _amount);
+    event UnlockTokens(string name, string symbol, uint256 _amount);
 
     function lock(address _sourceToken, uint256 _amount) external {
         BaseToken token = BaseToken(_sourceToken);
@@ -28,6 +29,7 @@ contract EthereumBridge {
         accountBalances[msg.sender][_targetToken] -= _amount;
         BaseToken token = BaseToken(_targetToken);
         token.transfer(msg.sender, _amount);
+        emit UnlockTokens(token.name(), token.symbol(), _amount);
     }
 
 }

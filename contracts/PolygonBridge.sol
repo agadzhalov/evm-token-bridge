@@ -13,6 +13,7 @@ contract PolygonBridge {
 
     mapping(address => bool) private mapTokenDeployedOnNetwork;
     mapping(address => address) private mapSourceToTagetTokens;
+    mapping(address => address) private mapTargetToSourceTokens;
 
     event DeployedNewToken(string _name, string _symbol, uint _amount);
     event MintTokens(string _name, string _symbol, uint _amount);
@@ -63,6 +64,7 @@ contract PolygonBridge {
     function setTokenOnNetwork(address _sourceToken, address _targetToken) private {
         mapTokenDeployedOnNetwork[_sourceToken] = true;
         mapSourceToTagetTokens[_sourceToken] = _targetToken;
+        mapTargetToSourceTokens[_targetToken] = _sourceToken;
     }
 
     function isTokenOnNetwork(address _tokenAddress) external view returns(bool) {
@@ -71,6 +73,10 @@ contract PolygonBridge {
 
     function getTargetTokenFromSource(address _sourceAddress) external view returns(address) {
         return mapSourceToTagetTokens[_sourceAddress];
+    }
+
+    function getSourceTokenFromTarget(address _targetAddress) external view returns(address) {
+        return mapTargetToSourceTokens[_targetAddress];
     }
 
     function verifyMessage(bytes32 _hashedMessage, uint8 _v, bytes32 _r, bytes32 _s) private pure returns (address) {
