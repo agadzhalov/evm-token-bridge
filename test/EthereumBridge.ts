@@ -72,15 +72,6 @@ describe("EthereumBridge", function () {
         await expect(bridge.unlock(token.address, MORE_TOKEN_AMOUNT)).to.be.revertedWith("Insufficient amount of locked tokens");
     });
 
-    // it.only("Should lock with permit", async function () {
-    //     const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-
-    //     const deadline = ethers.constants.MaxUint256;
-    //     const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
-    //     await bridge.lockWithPermit(token.address, TOKEN_AMOUNT, deadline, v, r, s);
-    //     expect(await token.balanceOf(bridge.address)).to.equal(TOKEN_AMOUNT);
-    // });
-
 });
 
 const getPermitSignature = async(signer: any, token: any, spender: any, value: any, deadline: any) => {
