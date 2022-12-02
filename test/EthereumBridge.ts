@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BaseToken, EthereumBridge } from "../typechain-types";
+import getPermitSignature from "./utils";
 
 describe("EthereumBridge", function () {
 
@@ -45,7 +46,7 @@ describe("EthereumBridge", function () {
     });
     
     it("Should lock and unlock 5000 tokens without minting", async function () {
-        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+        const TOKEN_AMOUNT = ethers.utils.parseUnits("3000", 18);
         const deadline = ethers.constants.MaxUint256;
         const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
 
@@ -73,54 +74,3 @@ describe("EthereumBridge", function () {
     });
 
 });
-
-const getPermitSignature = async(signer: any, token: any, spender: any, value: any, deadline: any) => {
-    const [nonce, name, version, chainId] = await Promise.all([
-        token.nonces(signer.address),
-        token.name(),
-        "1",
-        signer.getChainId(),
-    ])
-
-    return ethers.utils.splitSignature(
-        await signer._signTypedData(
-            {
-                name,
-                version,
-                chainId,
-                verifyingContract: token.address,
-            },
-            {
-                Permit: [
-                    {
-                        name: "owner",
-                        type: "address",
-                    },
-                    {
-                        name: "spender",
-                        type: "address",
-                    },
-                    {
-                        name: "value",
-                        type: "uint256",
-                    },
-                    {
-                        name: "nonce",
-                        type: "uint256",
-                    },
-                    {
-                        name: "deadline",
-                        type: "uint256",
-                    },
-                ],
-            },
-            {
-                owner: signer.address,
-                spender,
-                value,
-                nonce,
-                deadline,
-            }
-        )
-    )
-}

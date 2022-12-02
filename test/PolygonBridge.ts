@@ -3,6 +3,18 @@ import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import BaseTokenABI from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
 import { BaseToken, PolygonBridge } from "../typechain-types";
+import getPermitSignature from "./utils";
+
+const signAndClaim = async (owner: SignerWithAddress, amount: string, signMessage: string) => {
+    const tokenAmount = ethers.utils.parseUnits(amount, 18);
+    const messageHash = ethers.utils.solidityKeccak256(['string'], [signMessage]);
+    const arrayfiedHash = ethers.utils.arrayify(messageHash);
+    const signature = await owner.signMessage(arrayfiedHash);
+
+    const sig = ethers.utils.splitSignature(signature);
+    const [v, r, s] = [sig.v, sig.r, sig.s];
+    return { tokenAmount, messageHash, v, r, s };
+}
 
 describe("PolygonBridge", function () {
 
@@ -27,25 +39,17 @@ describe("PolygonBridge", function () {
     });
     
     it("Should throw when trying to claim tokens with an unsigned/wrong message", async function () {
-        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
-        const arrayfiedHash = ethers.utils.arrayify(messageHash);
-        const signature = await owner.signMessage(arrayfiedHash);
+        const { tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
         
-        const sig = ethers.utils.splitSignature(signature);
         await expect(bridge.connect(addr1).
-            claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s))
+            claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s))
             .to.be.revertedWith("The message was not signed by the caller");
     });
 
     it("Should deploy new token on Claim when one is not existing", async function () {
-        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
-        const arrayfiedHash = ethers.utils.arrayify(messageHash);
-        const signature = await owner.signMessage(arrayfiedHash);
-        
-        const sig = ethers.utils.splitSignature(signature);
-        const claimTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        const {tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
+
+        const claimTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
         claimTx.wait();
 
         // check new token with W (wrapped)
@@ -55,7 +59,7 @@ describe("PolygonBridge", function () {
         expect(await wrappedToken.symbol()).to.be.equal("WGOTKN");
         
         // check token transfer 
-        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(TOKEN_AMOUNT);
+        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(tokenAmount);
 
         // check is token on network
         expect(await bridge.isTokenOnNetwork(token.address)).to.be.equal(true);
@@ -64,25 +68,19 @@ describe("PolygonBridge", function () {
         expect(await bridge.getSourceTokenFromTarget(wrappedToken.address)).to.be.equal(token.address);
 
         // check event emitted
-        await expect(claimTx).to.emit(bridge, 'DeployedNewToken').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
+        await expect(claimTx).to.emit(bridge, 'DeployedNewToken').withArgs("WGosho", "WGOTKN", tokenAmount);
     });
 
     it("Should mint new tokens on Claim when there's already deployed one", async function () {
-        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
-        const arrayfiedHash = ethers.utils.arrayify(messageHash);
-        const signature = await owner.signMessage(arrayfiedHash);
-        
-        const sig = ethers.utils.splitSignature(signature);
-        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
-        claimDeployTx.wait();
+        const {tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
 
         // check new token with W (wrapped)
         const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
         const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
         
         // check mint
-        const claimMintTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        const claimMintTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
         claimMintTx.wait();
 
         const EXPECTED_TOTAL_AMOUNT = ethers.utils.parseUnits("10000", 18);
@@ -93,36 +91,35 @@ describe("PolygonBridge", function () {
         expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(EXPECTED_ACCOUNT_AMOUNT);
 
         // emit event 
-        await expect(claimMintTx).to.emit(bridge, 'MintTokens').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
+        await expect(claimMintTx).to.emit(bridge, 'MintTokens').withArgs("WGosho", "WGOTKN", tokenAmount);
     });
 
     it("Should destroy tokens", async function () {
-        const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        const messageHash = ethers.utils.solidityKeccak256(['string'], ["signed message to claim tokens"]);
-        const arrayfiedHash = ethers.utils.arrayify(messageHash);
-        const signature = await owner.signMessage(arrayfiedHash);
-        
-        const sig = ethers.utils.splitSignature(signature);
-        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT, messageHash, sig.v, sig.r, sig.s);
+        const {tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
         claimDeployTx.wait();
 
+        // check new token with W (wrapped)
         const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
         const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
 
         // should throw when trying to burn more tokens than total supply
         const AMOUNT_TO_BE_DELETED = ethers.utils.parseUnits("5001", 18);
-        await expect(bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED))
+        const deadline = ethers.constants.MaxUint256;
+        const {v: vD, r: rD, s: sD} = await getPermitSignature(owner, wrappedToken, bridge.address, AMOUNT_TO_BE_DELETED, deadline);
+        
+        await expect(bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED, deadline, vD, rD, sD))
             .to.be.revertedWith("Can't destroy more tokens than the total supply");
 
         // should throw if user doesn't have enough tokens to burn
         const AMOUNT_TO_BE_DELETED2 = ethers.utils.parseUnits("500", 18);
-        await expect(bridge.connect(addr1).destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED2))
+        await expect(bridge.connect(addr1).destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED2, deadline, vD, rD, sD))
             .to.be.revertedWith("Owner doesn't have enough tokens to destroy");
 
         // check burn
         const AMOUNT_TO_BE_DESTROYED = ethers.utils.parseUnits("3000", 18);
-        await wrappedToken.approve(bridge.address, AMOUNT_TO_BE_DESTROYED);
-        const destroyTokensTx = await bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DESTROYED);
+        const {v: vDD, r: rDD, s: sDD} = await getPermitSignature(owner, wrappedToken, bridge.address, AMOUNT_TO_BE_DESTROYED, deadline);
+        const destroyTokensTx = await bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DESTROYED, deadline, vDD, rDD, sDD);
 
         const AMOUNT_TO_BE_LEFT = ethers.utils.parseUnits("2000", 18);
         expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(AMOUNT_TO_BE_LEFT);

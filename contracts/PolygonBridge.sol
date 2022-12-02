@@ -37,10 +37,11 @@ contract PolygonBridge {
         }
     }
 
-    function destroyTokens(address _targetAddress, uint256 _amount) external {
+    function destroyTokens(address _targetAddress, uint256 _amount, uint256 _deadline, uint8 _v, bytes32 _r, bytes32 _s) external {
         BaseToken token = BaseToken(_targetAddress);
         require(token.totalSupply() >= _amount, "Can't destroy more tokens than the total supply");
         require(token.balanceOf(msg.sender) >= _amount, "Owner doesn't have enough tokens to destroy");
+        token.permit(msg.sender, address(this), _amount, _deadline, _v, _r, _s);
         token.burnFrom(msg.sender, _amount);
         emit BurntTokens(token.name(), token.symbol(), _amount);
     }
