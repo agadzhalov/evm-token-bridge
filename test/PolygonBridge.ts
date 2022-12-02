@@ -60,6 +60,9 @@ describe("PolygonBridge", function () {
         // check is token on network
         expect(await bridge.isTokenOnNetwork(token.address)).to.be.equal(true);
 
+        // should get source token address from target token address
+        expect(await bridge.getSourceTokenFromTarget(wrappedToken.address)).to.be.equal(token.address);
+
         // check event emitted
         await expect(claimTx).to.emit(bridge, 'DeployedNewToken').withArgs("WGosho", "WGOTKN", TOKEN_AMOUNT);
     });
