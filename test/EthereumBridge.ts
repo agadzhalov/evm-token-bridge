@@ -1,8 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BaseToken } from "../typechain-types";
-import { EthereumBridge } from "../typechain-types/contracts/EthereumBridge.sol";
+import { BaseToken, EthereumBridge } from "../typechain-types";
 
 describe("EthereumBridge", function () {
 
@@ -28,9 +27,10 @@ describe("EthereumBridge", function () {
     
     it("Should lock 5000 tokens and emit event", async function () {
         const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);``
-        token.approve(bridge.address, TOKEN_AMOUNT);
+        const deadline = ethers.constants.MaxUint256;
+        const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
 
-        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT);
+        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT, deadline, v, r, s);
         lockTx.wait();
 
         expect(await token.balanceOf(bridge.address)).to.equal(TOKEN_AMOUNT);
@@ -39,15 +39,17 @@ describe("EthereumBridge", function () {
 
     it("Should throw when trying to lock more tokens than available", async function () {
         const MORE_TOKEN_AMOUNT = ethers.utils.parseUnits("10001", 18);
-        token.approve(bridge.address, MORE_TOKEN_AMOUNT);
-        await expect(bridge.lock(token.address, MORE_TOKEN_AMOUNT)).to.be.revertedWith("Insufficient amount of tokens");
+        const deadline = ethers.constants.MaxUint256;
+        const {v, r, s} = await getPermitSignature(owner, token, bridge.address, MORE_TOKEN_AMOUNT, deadline);
+        await expect(bridge.lock(token.address, MORE_TOKEN_AMOUNT, deadline, v, r, s)).to.be.revertedWith("Insufficient amount of tokens");
     });
     
     it("Should lock and unlock 5000 tokens without minting", async function () {
         const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        token.approve(bridge.address, TOKEN_AMOUNT);
+        const deadline = ethers.constants.MaxUint256;
+        const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
 
-        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT);
+        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT, deadline, v, r, s);
         lockTx.wait();
 
         const unlockTx = await bridge.unlock(token.address, TOKEN_AMOUNT);
@@ -55,17 +57,79 @@ describe("EthereumBridge", function () {
 
         expect(await token.balanceOf(bridge.address)).to.equal(ethers.utils.parseUnits("0", 18));
         expect(await token.balanceOf(owner.address)).to.equal(ethers.utils.parseUnits("10000", 18));
+        await expect(unlockTx).to.emit(bridge, 'UnlockTokens').withArgs(token.address, await token.name(), await token.symbol(), TOKEN_AMOUNT);
     });
 
     it("Should throw when trying to unlock more tokens than available", async function () {
         const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
-        token.approve(bridge.address, TOKEN_AMOUNT);
+        const deadline = ethers.constants.MaxUint256;
+        const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
 
-        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT);
+        const lockTx = await bridge.lock(token.address, TOKEN_AMOUNT, deadline, v, r, s);
         lockTx.wait();
 
         const MORE_TOKEN_AMOUNT = ethers.utils.parseUnits("6000", 18);
         await expect(bridge.unlock(token.address, MORE_TOKEN_AMOUNT)).to.be.revertedWith("Insufficient amount of locked tokens");
     });
 
+    // it.only("Should lock with permit", async function () {
+    //     const TOKEN_AMOUNT = ethers.utils.parseUnits("5000", 18);
+
+    //     const deadline = ethers.constants.MaxUint256;
+    //     const {v, r, s} = await getPermitSignature(owner, token, bridge.address, TOKEN_AMOUNT, deadline);
+    //     await bridge.lockWithPermit(token.address, TOKEN_AMOUNT, deadline, v, r, s);
+    //     expect(await token.balanceOf(bridge.address)).to.equal(TOKEN_AMOUNT);
+    // });
+
 });
+
+const getPermitSignature = async(signer: any, token: any, spender: any, value: any, deadline: any) => {
+    const [nonce, name, version, chainId] = await Promise.all([
+        token.nonces(signer.address),
+        token.name(),
+        "1",
+        signer.getChainId(),
+    ])
+
+    return ethers.utils.splitSignature(
+        await signer._signTypedData(
+            {
+                name,
+                version,
+                chainId,
+                verifyingContract: token.address,
+            },
+            {
+                Permit: [
+                    {
+                        name: "owner",
+                        type: "address",
+                    },
+                    {
+                        name: "spender",
+                        type: "address",
+                    },
+                    {
+                        name: "value",
+                        type: "uint256",
+                    },
+                    {
+                        name: "nonce",
+                        type: "uint256",
+                    },
+                    {
+                        name: "deadline",
+                        type: "uint256",
+                    },
+                ],
+            },
+            {
+                owner: signer.address,
+                spender,
+                value,
+                nonce,
+                deadline,
+            }
+        )
+    )
+}

@@ -14,11 +14,12 @@ contract EthereumBridge {
     mapping(address => mapping(address => uint256)) private accountBalances; // account -> token -> amount 
 
     event LockTokens(address _sourceToken, address _spender, uint256 _amount);
-    event UnlockTokens(string name, string symbol, uint256 _amount);
+    event UnlockTokens(address _address, string name, string symbol, uint256 _amount);
 
-    function lock(address _sourceToken, uint256 _amount) external {
+    function lock(address _sourceToken, uint256 _amount, uint256 _deadline, uint8 v, bytes32 r, bytes32 s) external {
         BaseToken token = BaseToken(_sourceToken);
         require(token.balanceOf(msg.sender) >= _amount, "Insufficient amount of tokens");
+        token.permit(msg.sender, address(this), _amount, _deadline, v, r, s);
         token.transferFrom(msg.sender, address(this), _amount);
         accountBalances[msg.sender][_sourceToken] += _amount;
         emit LockTokens(_sourceToken, msg.sender, _amount);
@@ -29,7 +30,7 @@ contract EthereumBridge {
         accountBalances[msg.sender][_targetToken] -= _amount;
         BaseToken token = BaseToken(_targetToken);
         token.transfer(msg.sender, _amount);
-        emit UnlockTokens(token.name(), token.symbol(), _amount);
+        emit UnlockTokens(_targetToken, token.name(), token.symbol(), _amount);
     }
 
 }

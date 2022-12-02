@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BaseToken, PolygonBridge } from "../typechain-types";
 import BaseTokenABI from "./../artifacts/contracts/BaseToken.sol/BaseToken.json";
+import { BaseToken, PolygonBridge } from "../typechain-types";
 
 describe("PolygonBridge", function () {
 
