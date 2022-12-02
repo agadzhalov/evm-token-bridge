@@ -99,7 +99,27 @@ describe("PolygonBridge", function () {
         const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
         claimDeployTx.wait();
 
-        // check new token with W (wrapped)
+        const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
+        const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
+
+        // check burn
+        const AMOUNT_TO_BE_DESTROYED = ethers.utils.parseUnits("3000", 18);
+        const deadline = ethers.constants.MaxUint256;
+        const {v: vD, r: rD, s: sD} = await getPermitSignature(owner, wrappedToken, bridge.address, AMOUNT_TO_BE_DESTROYED, deadline);
+        const destroyTokensTx = await bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DESTROYED, deadline, vD, rD, sD);
+
+        const AMOUNT_TO_BE_LEFT = ethers.utils.parseUnits("2000", 18);
+        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(AMOUNT_TO_BE_LEFT);
+
+        // check emit event
+        await expect(destroyTokensTx).to.emit(bridge, 'BurntTokens').withArgs("WGosho", "WGOTKN", AMOUNT_TO_BE_DESTROYED);
+    });
+
+    it("Should throw when trying to burn more tokens than total supply", async function () {
+        const {tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
+        claimDeployTx.wait();
+
         const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
         const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
 
@@ -110,22 +130,22 @@ describe("PolygonBridge", function () {
         
         await expect(bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED, deadline, vD, rD, sD))
             .to.be.revertedWith("Can't destroy more tokens than the total supply");
+    });
 
-        // should throw if user doesn't have enough tokens to burn
-        const AMOUNT_TO_BE_DELETED2 = ethers.utils.parseUnits("500", 18);
-        await expect(bridge.connect(addr1).destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED2, deadline, vD, rD, sD))
+    it("Should throw if user doesn't have enough tokens to burn", async function () {
+        const {tokenAmount, messageHash, v, r, s} = await signAndClaim(owner, "5000", "signed message to claim tokens");
+        const claimDeployTx = await bridge.claimTokens(token.address, await token.name(), await token.symbol(), tokenAmount, messageHash, v, r, s);
+        claimDeployTx.wait();
+
+        const wrappedTokenAddress = await bridge.getTargetTokenFromSource(token.address);
+        const wrappedToken = new ethers.Contract(wrappedTokenAddress, BaseTokenABI.abi, owner);
+
+        const AMOUNT_TO_BE_DELETED = ethers.utils.parseUnits("500", 18);
+        const deadline = ethers.constants.MaxUint256;
+        const {v: vD, r: rD, s: sD} = await getPermitSignature(owner, wrappedToken, bridge.address, AMOUNT_TO_BE_DELETED, deadline);
+        
+        await expect(bridge.connect(addr1).destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DELETED, deadline, vD, rD, sD))
             .to.be.revertedWith("Owner doesn't have enough tokens to destroy");
-
-        // check burn
-        const AMOUNT_TO_BE_DESTROYED = ethers.utils.parseUnits("3000", 18);
-        const {v: vDD, r: rDD, s: sDD} = await getPermitSignature(owner, wrappedToken, bridge.address, AMOUNT_TO_BE_DESTROYED, deadline);
-        const destroyTokensTx = await bridge.destroyTokens(wrappedToken.address, AMOUNT_TO_BE_DESTROYED, deadline, vDD, rDD, sDD);
-
-        const AMOUNT_TO_BE_LEFT = ethers.utils.parseUnits("2000", 18);
-        expect(await wrappedToken.balanceOf(owner.address)).to.be.equal(AMOUNT_TO_BE_LEFT);
-
-        // check emit event
-        await expect(destroyTokensTx).to.emit(bridge, 'BurntTokens').withArgs("WGosho", "WGOTKN", AMOUNT_TO_BE_DESTROYED);
     });
 
 });
