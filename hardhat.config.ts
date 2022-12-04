@@ -2,6 +2,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import { HardhatUserConfig, task } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import deployERC20TokenGoerli from "./scripts/deploy-erc20-goerli";
+import "hardhat-gas-reporter";
 
 import * as dotenv from "dotenv";
 import deployEthereumBridgeGoerli from "./scripts/deploy-ethbridge-goerli";
@@ -38,6 +39,10 @@ const config: HardhatUserConfig = {
       //polygon
       polygonMumbai: process.env.POLYGONSCAN_KEY || "",
     }
+  },
+  gasReporter: {
+    enabled: true,
+    currency: 'ETH',
   }
 };
 
